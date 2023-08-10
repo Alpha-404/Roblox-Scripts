@@ -1,0 +1,140 @@
+local player = game:GetService("Players").LocalPlayer
+loadstring(game:HttpGet('https://raw.githubusercontent.com/Alpha-404/NC-REANIM-V2/main/Reanimate.lua'))()
+workspace:WaitForChild("Rig")
+
+local s = Instance.new("Sound", player.Character.Torso)
+s.SoundId = "rbxassetid://2426693638"
+s.Volume = 10
+s.Looped = true
+s:Play()
+
+local state = "idle"
+
+loadstring(game:HttpGet('https://pastebin.com/raw/jTyPietP'))()
+
+local gun = workspace.Rig.WeaponAccessory.Handle
+
+local att0 = Instance.new("Attachment", gun)
+att0.Orientation = Vector3.new(42.52, 92.517, -168.928)
+att0.Position = Vector3.new(0.303, -1.117, -0.134)
+
+local att1 = Instance.new("Attachment",workspace.Rig["Right Arm"])
+
+local ap = Instance.new("AlignPosition",gun)
+ap.Attachment0 = att0
+ap.Attachment1 = att1
+ap.RigidityEnabled = true 
+
+
+local ao = Instance.new("AlignOrientation",gun) 
+ao.Attachment0 = att0
+ao.Attachment1 = att1
+ao.RigidityEnabled = true
+
+gun.AccessoryWeld:Destroy()
+
+gun.PFXAttachment.Explosion:Destroy()
+gun.PFXAttachment.Sparkle:Destroy()
+
+for i,v in pairs(gun.PFXAttachment:GetChildren()) do
+	v.Rate = "inf" 
+end
+
+local Character = workspace:WaitForChild('Rig')
+local Motors = {}
+local Normals = {}
+
+for i,v in pairs(Character:GetDescendants()) do
+	if v:IsA("Motor6D") and v.Part0 and v.Part1  then
+		Motors[tostring(v.Part1)] = v
+		Normals[tostring(v.Part1)] = v.Transform
+	end
+end 
+
+local function poseTweenInfo(t,s,g)
+	local s = tostring(s)
+	local g = tostring(g)
+	local s = string.split(s,"Enum.PoseEasingStyle.")
+	local g = string.split(g,"Enum.PoseEasingDirection.")
+	local s = s[2]
+	local g = g[2]
+	local s = Enum.EasingStyle[s]
+	local g = Enum.EasingDirection[g]
+	return TweenInfo.new(t,s,g)
+end
+
+workspace.Rig.Humanoid.Running:Connect(function(st)
+	if st > 0 then
+		state = "running"
+	else
+		state = "idle"
+	end
+end)
+
+workspace.Rig.Humanoid.FreeFalling:Connect(function()
+	state = "fall"
+end)
+
+workspace.Rig.Humanoid.Jumping:Connect(function()
+	state = "fall"
+end)
+
+while game:GetService("RunService").RenderStepped:Wait() do
+	if state == "running" then		
+		for i,Keyframe in pairs(run) do
+			local LastKeyframe = run[#run-1] or Keyframe
+			for PoseName,Pose in pairs(Keyframe.Poses) do
+				local Inst = Motors[tostring(PoseName)]
+				if Inst and Inst.Name ~= "HumanoidRootPart" then
+					local waitTime = Keyframe.Time
+					local PoseTween = game:GetService("TweenService"):Create(Motors[tostring(PoseName)],poseTweenInfo(waitTime,Pose.EasingStyle,Pose.EasingDirection),{Transform = Pose.CF})
+
+					PoseTween:Play()
+				end
+			end
+			wait(Keyframe.Time)
+		end
+
+		for i,v in pairs(Motors) do
+			game:GetService("TweenService"):Create(v,TweenInfo.new(),{Transform = Normals[tostring(i)]}):Play()
+		end
+	end
+	if state == "fall" then
+		for i,Keyframe in pairs(fall) do
+			local LastKeyframe = fall[#fall-1] or Keyframe
+			for PoseName,Pose in pairs(Keyframe.Poses) do
+				local Inst = Motors[tostring(PoseName)]
+				if Inst and Inst.Name ~= "HumanoidRootPart" then
+					local waitTime = Keyframe.Time
+					local PoseTween = game:GetService("TweenService"):Create(Motors[tostring(PoseName)],poseTweenInfo(waitTime,Pose.EasingStyle,Pose.EasingDirection),{Transform = Pose.CF})
+
+					PoseTween:Play()
+				end
+			end
+			wait(Keyframe.Time)
+		end
+
+		for i,v in pairs(Motors) do
+			game:GetService("TweenService"):Create(v,TweenInfo.new(),{Transform = Normals[tostring(i)]}):Play()
+		end
+	end
+	if state == "idle" then
+		for i,Keyframe in pairs(idle) do
+			local LastKeyframe = idle[#idle-1] or Keyframe
+			for PoseName,Pose in pairs(Keyframe.Poses) do
+				local Inst = Motors[tostring(PoseName)]
+				if Inst and Inst.Name ~= "HumanoidRootPart" then
+					local waitTime = Keyframe.Time
+					local PoseTween = game:GetService("TweenService"):Create(Motors[tostring(PoseName)],poseTweenInfo(waitTime,Pose.EasingStyle,Pose.EasingDirection),{Transform = Pose.CF})
+
+					PoseTween:Play()
+				end
+			end
+			wait(Keyframe.Time)
+		end
+
+		for i,v in pairs(Motors) do
+			game:GetService("TweenService"):Create(v,TweenInfo.new(),{Transform = Normals[tostring(i)]}):Play()
+		end
+	end
+end
